@@ -44,11 +44,6 @@ tryMethod = function(f, signature, definition, generic) {
       # re-register S4 methods.
       for (cl in bnlearn.classes) {
 
-        setMethod("path", cl, where = topenv(parent.frame()),
-          function(object, from, to, direct = TRUE, underlying.graph = FALSE,
-            debug = FALSE)
-              path.exists(object, from = from, to = to, direct = direct,
-                 underlying.graph = underlying.graph, debug = debug))
         setMethod("score", cl, where = topenv(parent.frame()),
           function(x, data, type = NULL, ..., by.node = FALSE, debug = FALSE)
             network.score(x = x, data = data, type = type, ...,
@@ -87,17 +82,11 @@ tryMethod = function(f, signature, definition, generic) {
     tryMethod("degree", cl,
       definition = function(object, Nodes) .degree(object, Nodes),
       generic = function(object, Nodes, ...) standardGeneric("degree"))
-    tryMethod("path", cl,
-      definition = function(object, from, to, direct = TRUE,
-                     underlying.graph = FALSE, debug = FALSE)
-                       path.exists(object, from = from, to = to, direct = direct,
-                          underlying.graph = underlying.graph, debug = debug),
-      generic = function(object, ...) standardGeneric("path"))
     tryMethod("score", cl,
-      definition = function(x, data, type = NULL, ..., by.node = FALSE,
-                     debug = FALSE)
-                       network.score(x = x, data = data, type = type, ...,
-                         by.node = by.node, debug = debug),
+      definition = function(x, data, check.args = TRUE, type = NULL, ..., by.node = FALSE,
+                            debug = FALSE)
+                       network.score(x = x, check.args = check.args, data = data, type = type, ...,
+                                     by.node = by.node, debug = debug),
       generic = function (x, ...) standardGeneric("score"))
 
   }#FOR

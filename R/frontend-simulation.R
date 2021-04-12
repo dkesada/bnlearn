@@ -40,31 +40,37 @@ rbn.default = function(x, n = 1, ...) {
 }#RBN.DEFAULT
 
 # generate a random graph.
-random.graph = function(nodes, num = 1, method = "ordered", ..., debug = FALSE) {
-
-  # check the generation method.
-  check.label(method, choices = graph.generation.algorithms,
-    labels = graph.generation.labels, argname = "graph generation method",
-    see = "random.graph")
-  # check the node labels.
-  check.nodes(nodes)
-  # check the number of graph to generate.
-  if (!is.positive.integer(num))
-    stop(" the number of graphs to generate must be a positive integer number.")
-
-  # expand and sanitize method-specific arguments.
-  extra.args = check.graph.generation.args(method = method,
-                 nodes = nodes, extra.args = list(...))
-
-  random.graph.backend(num = num, nodes = nodes, method = method,
-    extra.args = extra.args, debug = debug)
-
+random.graph = function(nodes, num = 1, method = "ordered", ..., check.args = TRUE, debug = FALSE) {
+  
+  if(check.args){
+    # check the generation method.
+    check.label(method, choices = graph.generation.algorithms,
+                labels = graph.generation.labels, argname = "graph generation method",
+                see = "random.graph")
+    # check the node labels.
+    check.nodes(nodes)
+    # check the number of graph to generate.
+    if (!is.positive.integer(num))
+      stop(" the number of graphs to generate must be a positive integer number.")
+    
+    # expand and sanitize method-specific arguments.
+    extra.args = check.graph.generation.args(method = method,
+                                             nodes = nodes, extra.args = list(...))
+    
+    res <-  random.graph.backend(num = num, nodes = nodes, method = method,
+                                 extra.args = extra.args, debug = debug)
+  }
+  
+  else
+    res <- empty.graph.backend(num = num, nodes = nodes)
+  
+  return(res)
 }#RANDOM.GRAPH
 
 # create an empty graph from a given set of nodes.
-empty.graph = function(nodes, num = 1) {
+empty.graph = function(nodes, num = 1, check.args = TRUE) {
 
-  random.graph(nodes = nodes, num = num, method = "empty", debug = FALSE)
+  random.graph(nodes = nodes, num = num, method = "empty", check.args = check.args, debug = FALSE)
 
 }#EMPTY.GRAPH
 

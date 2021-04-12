@@ -129,11 +129,11 @@
 }
 \examples{
 data(learning.test)
-res = set.arc(gs(learning.test), "A", "B")
+res = hc(learning.test)
 score(res, learning.test, type = "bde")
 
 ## let's see score equivalence in action!
-res2 = set.arc(gs(learning.test), "B", "A")
+res2 = set.arc(res, "B", "A")
 score(res2, learning.test, type = "bde")
 
 ## K2 score on the other hand is not score equivalent.

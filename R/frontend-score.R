@@ -1,37 +1,46 @@
 
 # compute the score of a network.
-network.score = function(x, data, type = NULL, ..., by.node = FALSE, debug = FALSE) {
+network.score = function(x, data, check.args = TRUE, type = NULL, ..., by.node = FALSE, debug = FALSE) {
 
-  # check x's class.
-  check.bn(x)
-  # the original data set is needed.
-  check.data(data)
-  # check the network against the data.
-  check.bn.vs.data(x, data)
-  # check debug and by.node.
-  check.logical(by.node)
-  check.logical(debug)
-  # no score if the graph is partially directed.
-  if (is.pdag(x$arcs, names(x$nodes)))
-    stop("the graph is only partially directed.")
-  # check the score label.
-  type = check.score(type, data)
-
-  # expand and sanitize score-specific arguments.
-  extra.args = check.score.args(score = type, network = x,
-                 data = data, extra.args = list(...), learning = FALSE)
-  # check that the score is decomposable when returning node contributions.
-  if (by.node && !is.score.decomposable(type, extra.args))
-    stop("the score is not decomposable, node terms are not defined.")
+  if(check.args){
+    # check x's class.
+    check.bn(x)
+    # the original data set is needed.
+    check.data(data)
+    # check the network against the data.
+    check.bn.vs.data(x, data)
+    # check debug and by.node.
+    check.logical(by.node)
+    check.logical(debug)
+    # no score if the graph is partially directed.
+    if (is.pdag(x$arcs, names(x$nodes)))
+      stop("the graph is only partially directed.")
+    # check the score label.
+    type = check.score(type, data) 
+  
+    # expand and sanitize score-specific arguments.
+    extra.args = check.score.args(score = type, network = x,
+                   data = data, extra.args = list(...), check.args = check.args, learning = FALSE) # The function check.score.args is tough to cover. It adds arguments specific to each score. The k argument is specific for the aic and bic scores
+    # check that the score is decomposable when returning node contributions.
+    if (by.node && !is.score.decomposable(type, extra.args))
+      stop("the score is not decomposable, node terms are not defined.") 
+  }
+  else{
+    type = "bic-g"
+    extra.args = list("k" = log(nrow(data))/2)
+  }
+    
 
   # compute the node contributions to the network score.
   local = per.node.score(network = x, data = data, score = type,
-            targets = names(x$nodes), extra.args = extra.args, debug = debug)
+            targets = names(x$nodes), extra.args = extra.args, debug = debug) # Only bic-g works
 
-  if (by.node)
-    return(local)
-  else
-    return(sum(local))
+  # if (by.node)
+  #   return(local)
+  # else
+  #   return(sum(local)) # --TAG-Removed, I'll just do the sum in C rather than using the R primitive
+  
+  return(local[[1]])
 
 }#NETWORK.SCORE
 

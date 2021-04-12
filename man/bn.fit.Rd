@@ -126,7 +126,7 @@ bn.net(x, debug = FALSE)
 data(learning.test)
 
 # learn the network structure.
-res = gs(learning.test)
+res = pc.stable(learning.test)
 # set the direction of the only undirected arc, A - B.
 res = set.arc(res, "A", "B")
 # estimate the parameters of the Bayesian network.

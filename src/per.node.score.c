@@ -33,7 +33,7 @@ void c_per_node_score(SEXP network, SEXP data, SEXP score, SEXP targets,
 
 int i = 0, ntargets = length(targets);
 score_e s = score_to_enum(CHAR(STRING_ELT(score, 0)));
-double nparams = 0, *k = NULL;
+double nparams = 0, *k = NULL, tmp;
 SEXP cur, iss, prior, beta, exp, l, nu, iss_w, newdata, custom_fn, custom_args;
 
   /* allocate dummy variable for the current node's label. */
@@ -103,6 +103,9 @@ SEXP cur, iss, prior, beta, exp, l, nu, iss_w, newdata, custom_fn, custom_args;
 
         SET_STRING_ELT(cur, 0, STRING_ELT(targets, i));
         DEBUG_BEFORE();
+        //tmp = loglik_gnode(cur, network, data, &nparams, debugging);
+        //tmp -= (*k) * nparams;
+        //res[0] += tmp;
         res[i] = loglik_gnode(cur, network, data, &nparams, debugging);
         res[i] -= (*k) * nparams;
 

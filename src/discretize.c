@@ -5,10 +5,13 @@
 #include "include/tests.h"
 
 static void interval_discretization(double *orig, int *factor, int nbreaks,
-    double *cutpoints, int nobs) {
+    double *cutpoints, int nobs, bool debugging) {
 
 int i = 0, k = 0;
 double min = R_PosInf, max = R_NegInf, delta = 0;
+
+  if (debugging)
+    Rprintf("  > discretizing in %d levels.\n", nbreaks);
 
   /* determine the range (maximum and minimum values, assumed finite)...  */
   for (i = 0, min = R_PosInf, max = R_NegInf; i < nobs; i++) {
@@ -22,6 +25,10 @@ double min = R_PosInf, max = R_NegInf, delta = 0;
 
   /* ... cut the range in intervals of equal length... */
   delta = (max - min) / nbreaks;
+
+  if (debugging)
+    Rprintf("  > the range is [%lf, %lf], the interval length is %lf.\n",
+        min, max, delta);
 
   /* ... derive the factor integer code... */
   for (i = 0; i < nobs; i++) {
@@ -41,15 +48,21 @@ double min = R_PosInf, max = R_NegInf, delta = 0;
 }/*INTERVAL.DISCRETIZATION*/
 
 static void quantile_discretization(double *orig, int *factor, int nbreaks,
-    double *cutpoints, int nobs) {
+    double *cutpoints, int nobs, bool debugging) {
 
 int i = 0, k = 0, lo = 0, hi = 0;
 double h = 0, *sorted = NULL;
+
+  if (debugging)
+    Rprintf("  > discretizing in %d levels.\n", nbreaks);
 
   /* sort a copy of the data... */
   sorted = Calloc1D(nobs, sizeof(double));
   memcpy(sorted, orig, nobs * sizeof(double));
   R_qsort(sorted, 1, nobs);
+
+  if (debugging)
+    Rprintf("  > the range is [%lf, %lf].\n", sorted[0], sorted[nobs - 1]);
 
   /* ... compute the indexes of the cutpoints... */
   for (k = 0; k < nbreaks; k++)
@@ -126,10 +139,12 @@ SEXP levels;
 
 }/*CUTPOINTS_TO_LEVELS*/
 
-SEXP marginal_discretize(SEXP data, SEXP method, SEXP breaks, SEXP ordered) {
+SEXP marginal_discretize(SEXP data, SEXP method, SEXP breaks, SEXP ordered,
+    SEXP debug) {
 
 int i = 0, j = 0, max_nbreaks = 0;
 int *nbreaks = INTEGER(breaks), *create_ordered = LOGICAL(ordered);
+bool debugging = isTRUE(debug);
 cgdata orig = { 0 };
 discretization_e m = discretization_to_enum(CHAR(STRING_ELT(method, 0)));
 SEXP discretized, new_factor, new_levels;
@@ -138,6 +153,7 @@ SEXP discretized, new_factor, new_levels;
    * variables, with the understanding that continuous variables are not
    * necessarily Gaussian. */
   orig = cgdata_from_SEXP(data, 0, 0);
+  meta_copy_names(&(orig.m), 0, data);
 
   /* set up the return value. */
   PROTECT(discretized = allocVector(VECSXP, orig.m.ncols));
@@ -154,6 +170,10 @@ SEXP discretized, new_factor, new_levels;
 
     for (j = 0; j < orig.m.ncols; j++) {
 
+      if (debugging)
+        Rprintf("* %s discretization of variable %s.\n",
+          m == INTERVAL ? "interval" : "quantile", orig.m.names[orig.map[j]]);
+
       if (orig.m.flag[j].discrete) {
 
         /* leave discrete variables alone, just copy them over. */
@@ -167,10 +187,10 @@ SEXP discretized, new_factor, new_levels;
 
       if (m == INTERVAL)
         interval_discretization(orig.gcol[orig.map[j]], INTEGER(new_factor),
-          nbreaks[j], cutpoints, orig.m.nobs);
+          nbreaks[j], cutpoints, orig.m.nobs, debugging);
       else if (m == QUANTILE)
         quantile_discretization(orig.gcol[orig.map[j]], INTEGER(new_factor),
-            nbreaks[j], cutpoints, orig.m.nobs);
+            nbreaks[j], cutpoints, orig.m.nobs, debugging);
 
       /* set the levels and the class label. */
       PROTECT(new_levels = cutpoints_to_levels(cutpoints, nbreaks[j]));
@@ -190,7 +210,7 @@ SEXP discretized, new_factor, new_levels;
 
   }/*THEN*/
 
-  FreeCGDT(orig, FALSE);
+  FreeCGDT(orig);
 
   /* make sure the return value is a data frame. */
   PROTECT(discretized = minimal_data_frame(discretized));
@@ -228,12 +248,13 @@ int ***n = NULL, **ni = NULL, **nj = NULL, *nobs = NULL;
 }/*HARTEMINK_DISCRETIZATION*/
 
 SEXP joint_discretize(SEXP data, SEXP method, SEXP breaks, SEXP ordered,
-    SEXP initial_discretization, SEXP initial_breaks) {
+    SEXP initial_discretization, SEXP initial_breaks, SEXP debug) {
 
 int i = 0, j = 0, max_nbreaks = 0;
 int *nbreaks = INTEGER(breaks), *ibreaks = INTEGER(initial_breaks);
 int *create_ordered = LOGICAL(ordered);
 double **all_cutpoints = NULL;
+bool debugging = isTRUE(debug);
 ddata workspace = { 0 };
 cgdata orig = { 0 };
 discretization_e m = discretization_to_enum(CHAR(STRING_ELT(method, 0)));
@@ -259,7 +280,6 @@ SEXP *all_SEXPs = NULL;
     /* store the transformed data after the initial discretization, and pass
      * that to Hartemink's method to keep the whole thing modular. */
     workspace = empty_ddata(orig.m.nobs, orig.m.ncols);
-    workspace.m.flag = Calloc1D(orig.m.ncols, sizeof(flags));
 
     /* cutpoints used in the discretization should be stored to produce the
      * labels for the factor levels. */
@@ -289,13 +309,13 @@ SEXP *all_SEXPs = NULL;
         if (idisc == INTERVAL) {
 
           interval_discretization(orig.gcol[orig.map[j]], workspace.col[j],
-              ibreaks[j], all_cutpoints[j], orig.m.nobs);
+              ibreaks[j], all_cutpoints[j], orig.m.nobs, debugging);
 
         }/*THEN*/
         else if (idisc == QUANTILE) {
 
           quantile_discretization(orig.gcol[orig.map[j]], workspace.col[j],
-              ibreaks[j], all_cutpoints[j], orig.m.nobs);
+              ibreaks[j], all_cutpoints[j], orig.m.nobs, debugging);
 
         }/*THEN*/
 
@@ -334,7 +354,7 @@ SEXP *all_SEXPs = NULL;
 
   }/*ELSE*/
 
-  FreeCGDT(orig, FALSE);
+  FreeCGDT(orig);
   Free1D(all_cutpoints);
   Free1D(all_SEXPs);
 

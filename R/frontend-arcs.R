@@ -13,41 +13,42 @@ arcs = function(x) {
 }#ARCS
 
 # rebuild the network structure using a new set fo arcs.
-"arcs<-" = function(x, check.cycles = TRUE, check.illegal = TRUE, debug = FALSE,
+"arcs<-" = function(x, check.cycles = TRUE, check.illegal = TRUE, debug = FALSE, check.bypass = FALSE,
     value) {
 
   # check x's class.
-  check.bn(x)
+  # check.bn(x) # --TAG-Removed
   # a set of arcs is needed.
   if (missing(value))
     stop("no arc specified.")
   # check logical arguments.
-  check.logical(check.cycles)
-  check.logical(check.illegal)
-  check.logical(debug)
+  # check.logical(check.cycles)
+  # check.logical(check.illegal)
+  # check.logical(debug) #--TAG-Removed
   # sanitize the set of arcs.
-  value = check.arcs(value, nodes = names(x$nodes))
+  if(!check.bypass)
+    value = check.arcs(value, nodes = names(x$nodes)) # --TAG-Removed
   # check whether the the graph contains directed cycles.
-  if (check.cycles)
-    if (!is.acyclic(nodes = names(x$nodes), arcs = value, debug = debug,
-           directed = TRUE))
-      stop("the specified network contains cycles.")
+  # if (check.cycles)
+  #   if (!is.acyclic(nodes = names(x$nodes), arcs = value, debug = debug,
+  #          directed = TRUE))
+  #     stop("the specified network contains cycles.") # --TAG-Removed
   # check whether any arc is illegal.
-  if (check.illegal) {
-
-    illegal = which.listed(value, x$learning$illegal)
-
-    if (any(illegal)) {
-
-      illegal = apply(value[illegal, , drop = FALSE], 1,
-                  function(x) { paste(" (", x[1], ", ", x[2], ")", sep = "")  })
-
-      stop("the following arcs are not valid due to the parametric assumptions of the network:",
-        illegal, ".")
-
-    }#THEN
-
-  }#THEN
+  # if (check.illegal) {
+  # 
+  #   illegal = which.listed(value, x$learning$illegal)
+  # 
+  #   if (any(illegal)) {
+  # 
+  #     illegal = apply(value[illegal, , drop = FALSE], 1,
+  #                 function(x) { paste(" (", x[1], ", ", x[2], ")", sep = "")  })
+  # 
+  #     stop("the following arcs are not valid due to the parametric assumptions of the network:",
+  #       illegal, ".")
+  # 
+  #   }#THEN # --TAG-Removed
+  # 
+  # }#THEN
 
   # update the arcs of the network.
   x$arcs = value

@@ -72,8 +72,8 @@ is.score.decomposable = function(score, extra) {
 }#IS.SCORE.DECOMPOSABLE
 
 # sanitize the extra arguments passed to the network scores.
-check.score.args = function(score, network, data, extra.args, learning = FALSE) {
-
+check.score.args = function(score, network, data, extra.args, check.args, learning = FALSE) {
+  
   # check the imaginary sample size.
   if (has.argument(score, "iss", score.extra.args))
     extra.args$iss = check.iss(iss = extra.args$iss,

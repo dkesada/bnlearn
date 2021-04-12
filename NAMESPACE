@@ -156,4 +156,4 @@ S3method("[[<-", "bn.fit")
 S3method(mean, "bn.strength")
 
 exportClasses("bn", "bn.fit")
-exportMethods("nodes", "nodes<-", "degree", "path", "score")
+exportMethods("nodes", "nodes<-", "degree", "score")

@@ -159,8 +159,7 @@ averaged.network(strength, nodes, threshold)
 }
 \examples{
 data(learning.test)
-res = gs(learning.test)
-res = set.arc(res, "A", "B")
+res = hc(learning.test)
 arc.strength(res, learning.test)
 
 \dontrun{

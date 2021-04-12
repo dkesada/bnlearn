@@ -1,6 +1,13 @@
+bnlearn (4.7)
+
+  * removed the "moral" argument from vstructs() and cpdag().
+  * faster sanitization of bn objects (thanks David Quesada).
+  * fixed an overflow in the BGe score that produced NaN values (thanks David
+     Quesada).
+
 bnlearn (4.6.1)
 
-  * Fixed out-of-bounds memory access in discretize().
+  * Fixed out-of-bounds memory access in discretize() (thanks Brian Ripley).
 
 bnlearn (4.6)
 

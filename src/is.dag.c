@@ -6,11 +6,16 @@
  * negatives. */
 
 /* determine whether a graph is DAG or a PDAG/UG. */
-SEXP is_dag(SEXP arcs, SEXP nnodes) {
+SEXP is_dag(SEXP arcs, SEXP nodes) {
 
-int i = 0, nrow = length(arcs)/2, n = INT(nnodes);
-int *a = INTEGER(arcs);
+int i = 0, nrow = length(arcs)/2, n = LENGTH(nodes);
+int *a = NULL;
 short int *checklist = NULL;
+SEXP try;
+
+  /* match the node labels in the arc set. */
+  PROTECT(try = match(nodes, arcs, 0));
+  a = INTEGER(try);
 
   /* allocate and initialize the checklist. */
   checklist = Calloc1D(UPTRI_MATRIX(n), sizeof(short int));
@@ -34,6 +39,8 @@ short int *checklist = NULL;
     }/*THEN*/
 
   }/*FOR*/
+
+  UNPROTECT(1);
 
   Free1D(checklist);
 

@@ -89,12 +89,13 @@ long double logprob = 0;
   /* subset the rescaled covariance matrix to include only the parents. */
   covariance_drop_variable(&R, &Rtilde, 0);
 
-  logprob += 0.5 * (nobs + alpha_w - data_ncols + p) *
-               log(c_det(Rtilde.mat, Rtilde.dim));
-  logprob -= 0.5 * (nobs + alpha_w - data_ncols + p + 1) *
-               log(c_det(R.mat, R.dim));
+ logprob += 0.5 * (nobs + alpha_w - data_ncols + p) *
+               c_logdet(Rtilde.mat, Rtilde.dim);
 
-  FreeGDT(dtx, FALSE);
+  logprob -= 0.5 * (nobs + alpha_w - data_ncols + p + 1) *
+               c_logdet(R.mat, R.dim);
+
+  FreeGDT(dtx);
   FreeCOV(R);
   FreeCOV(Rtilde);
 
