@@ -1,6 +1,6 @@
 
 # compute the score of a network.
-network.score = function(x, data, check.args = TRUE, type = NULL, ..., by.node = FALSE, debug = FALSE) {
+network.score = function(x, data, check.args = TRUE, targets = NULL, type = NULL, ..., by.node = FALSE, debug = FALSE) {
 
   if(check.args){
     # check x's class.
@@ -29,18 +29,18 @@ network.score = function(x, data, check.args = TRUE, type = NULL, ..., by.node =
     type = "bic-g"
     extra.args = list("k" = log(nrow(data))/2)
   }
-    
+  
+  if(is.null(targets))
+    targets = names(x$nodes)
 
   # compute the node contributions to the network score.
   local = per.node.score(network = x, data = data, score = type,
-            targets = names(x$nodes), extra.args = extra.args, debug = debug) # Only bic-g works
+            targets = targets, extra.args = extra.args, debug = debug) # Only bic-g works
 
-  # if (by.node)
-  #   return(local)
-  # else
-  #   return(sum(local)) # --TAG-Removed, I'll just do the sum in C rather than using the R primitive
-  
-  return(local[[1]])
+  if (by.node)
+    return(local)
+  else
+    return(sum(local)) # --TAG-Removed, I'll just do the sum in C rather than using the R primitive
 
 }#NETWORK.SCORE
 

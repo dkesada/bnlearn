@@ -83,9 +83,9 @@ tryMethod = function(f, signature, definition, generic) {
       definition = function(object, Nodes) .degree(object, Nodes),
       generic = function(object, Nodes, ...) standardGeneric("degree"))
     tryMethod("score", cl,
-      definition = function(x, data, check.args = TRUE, type = NULL, ..., by.node = FALSE,
+      definition = function(x, data, check.args = TRUE, targets = NULL, type = NULL, ..., by.node = FALSE,
                             debug = FALSE)
-                       network.score(x = x, check.args = check.args, data = data, type = type, ...,
+                       network.score(x = x, check.args = check.args, targets = targets, data = data, type = type, ...,
                                      by.node = by.node, debug = debug),
       generic = function (x, ...) standardGeneric("score"))
 

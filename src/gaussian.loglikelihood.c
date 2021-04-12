@@ -97,8 +97,11 @@ SEXP nodes, node_t, parents, data_t;
   data_t = c_dataframe_column(data, target, TRUE, FALSE);
 
   /* compute the log-likelihood. */
-  if (length(parents) == 0)
-    loglik = glik(data_t, nparams);
+  if (length(parents) == 0){
+    //loglik = glik(data_t, nparams);
+    loglik = 0.0;
+  }
+    
   else
     loglik = cglik(data_t, data, parents, nparams);
 
